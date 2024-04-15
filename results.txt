@@ -1,6 +1,7 @@
-Test 1
+Accuracies for 5 different train-test splits:
 
-accuracy                           0.23       872
-   macro avg       0.05      0.07      0.05       872
-weighted avg       0.14      0.23      0.16       872
-
+Train - Test | 0.90 - 0.10 : 0.600
+Train - Test | 0.80 - 0.20 : 0.630
+Train - Test | 0.75 - 0.25 : 0.691
+Train - Test | 0.60 - 0.40 : 0.683
+Train - Test | 0.50 - 0.50 : 0.672
