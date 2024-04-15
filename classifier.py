@@ -41,6 +41,10 @@ def load_data(file_path):
         with open(file_path, 'r', encoding='utf-8') as file:
             for line in file:
                 # Assume each line is of at least length 4
+                # Skip rows with 'sos' type
+                if line[:3] == 'sos':
+                    continue
+                
                 if len(line) > 4:
                     types.append(line[:4])  # First 4 characters
                     posts.append(line[5:].strip())  # Rest of the line
@@ -76,7 +80,7 @@ def clean_data(df):
     df['Posts'] = df['Posts'].apply(lambda x: re.sub(r'[^\x00-\x7F]+', ' ', x))
     
     #lemmatizing is taking time
-    # df['Posts'] = df['Posts'].apply(lambda x: ' '.join([lemmatizer.lemmatize(word) for word in x.split()]))
+    df['Posts'] = df['Posts'].apply(lambda x: ' '.join([lemmatizer.lemmatize(word) for word in x.split()]))
     print('Data cleaning completed')
     return df
 
@@ -86,47 +90,15 @@ x = df['Posts']
 y = df['Type'] 
 print('\n')
 print('Splitting dataset into train-test...')  
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=42)
 print("Splitting complete.")
-
-def model_GNB():
-    print('\n')
-    print('!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!')
-    print('Applying GNB model...')
-    print('!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!')
-    vectorizer = TfidfVectorizer()
-
-    # Fit and transform the training data to create a document-term matrix
-    X_train_tfidf = vectorizer.fit_transform(X_train)
-
-    # Transform the test data to the same document-term matrix
-    X_test_tfidf = vectorizer.transform(X_test)
-
-    print('\n')
-    print('Loading model...')
-    gnb = GaussianNB()
-    print("Model loaded.")
-
-    # Train the classifier
-    print('\n')
-    print('Training...')
-    gnb.fit(X_train_tfidf.toarray(), y_train)
-    print('Trained.')
-
-    # Predict the labels for the test set
-    y_pred = gnb.predict(X_test_tfidf.toarray())
-
-    # Performance
-    print("Accuracy:", accuracy_score(y_test, y_pred))
-    print(classification_report(y_test, y_pred))
 
 def model_LR():
     print('\n')
     print('!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!')
     print('Applying LR model...')
     print('!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!-----!')
-    vectorizer = TfidfVectorizer(max_df=0.5, min_df=2, max_features=10000, ngram_range=(1,2))
-
+    vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5, min_df=2, max_features=10000, ngram_range=(1, 2))
     # Fit and transform the training data
     X_train_tfidf = vectorizer.fit_transform(X_train)
     X_test_tfidf = vectorizer.transform(X_test)
@@ -134,7 +106,8 @@ def model_LR():
     print('\n')
     print('Loading model...')
     # Initialize Logistic Regression
-    log_reg = LogisticRegression(max_iter=1000, C=1.0)
+    log_reg = LogisticRegression(C=1.0, max_iter=1000, solver='saga', penalty='l1')
+
     print("Model loaded.")
 
     # Train
@@ -151,10 +124,5 @@ def model_LR():
     print(classification_report(y_test, y_pred))
 
 print('\n')
-user_choice = input("Enter your choice (1 for GNB, 2 for LR): ")
-if user_choice == '1':
-    model_GNB()
-elif user_choice == '2':
-    model_LR()
-else:
-    print("Invalid input. Please enter '1' for GNB or '2' for LR.")
+model_LR()
+
