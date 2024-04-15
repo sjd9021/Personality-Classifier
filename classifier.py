@@ -31,33 +31,21 @@ stop_words = set(stopwords.words('english'))
 file_path = './mbti_1.csv'
 
 def load_data(file_path):
-    print('\n')
-    print('Loading data from csv...')
+    print('\nLoading data from csv...')
     types = []
     posts = []
-
-    # Read the file manually
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             for line in file:
-                # Assume each line is of at least length 4
-                # Skip rows with 'sos' type
-                if line[:3] == 'sos':
-                    continue
-                
                 if len(line) > 4:
-                    types.append(line[:4])  # First 4 characters
-                    posts.append(line[5:].strip())  # Rest of the line
-                    
-        # Create DataFrame from lists
-        df = pd.DataFrame({
-            'Type': types,
-            'Posts': posts
-        })
+                    type_label = line[:4].strip()  # Ensure no extra whitespace
+                    if type_label in valid_mbti_types:  # Check if it's a valid MBTI type
+                        types.append(type_label)
+                        posts.append(line[5:].strip())  # Rest of the line
+        df = pd.DataFrame({'Type': types, 'Posts': posts})
         print("Data loaded successfully.")
     except Exception as e:
         print(f"An error occurred: {e}")
-    
     return df
 
 def clean_data(df):
@@ -84,14 +72,23 @@ def clean_data(df):
     print('Data cleaning completed')
     return df
 
-df = clean_data(load_data(file_path))
+valid_mbti_types = {'ISTJ', 'ISFJ', 'INFJ', 'INTJ', 'ISTP', 'ISFP', 'INFP', 'INTP',
+                    'ESTP', 'ESFP', 'ENFP', 'ENTP', 'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ'}
 
-x = df['Posts'] 
-y = df['Type'] 
+df = clean_data(load_data(file_path))
+unique_types = df['Type'].unique()
+
+# Print the unique values found in the 'Type' column
+print("Unique MBTI Types in the DataFrame:")
+print(unique_types)
+
+x = df['Posts']
+y = df['Type']
 print('\n')
 print('Splitting dataset into train-test...')  
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=42)
 print("Splitting complete.")
+
 
 def model_LR():
     print('\n')
