@@ -4,8 +4,9 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from sklearn.model_selection import train_test_split
-
-
+from sklearn.naive_bayes import GaussianNB
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import classification_report, accuracy_score
 # Handle SSL Certificate Verification for NLTK on macOS
 # import ssl
 # try:
@@ -80,8 +81,24 @@ y = df['Type']
 
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.10, random_state=42)
 
-# Output the results to check
-print("Training set:")
-print(X_train.head(), y_train.head())
-print("\nTest set:")
-print(X_test.head(), y_test.head())
+print("split done")
+vectorizer = TfidfVectorizer()
+
+# Fit and transform the training data to create a document-term matrix
+X_train_tfidf = vectorizer.fit_transform(X_train)
+
+# Transform the test data to the same document-term matrix
+X_test_tfidf = vectorizer.transform(X_test)
+
+
+gnb = GaussianNB()
+print("model loaded")
+# Train the classifier
+gnb.fit(X_train_tfidf.toarray(), y_train)
+
+# Predict the labels for the test set
+y_pred = gnb.predict(X_test_tfidf.toarray())
+
+# Evaluate the model's performance
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred))
