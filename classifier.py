@@ -3,6 +3,8 @@ import re
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from sklearn.model_selection import train_test_split
+
 
 # Handle SSL Certificate Verification for NLTK on macOS
 # import ssl
@@ -71,4 +73,15 @@ def clean_data(df):
     # df['Posts'] = df['Posts'].apply(lambda x: ' '.join([lemmatizer.lemmatize(word) for word in x.split()]))
     return df
 df = clean_data(load_data(file_path))
-print(df.head())
+
+x = df['Posts'] 
+y = df['Type']   
+
+
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.10, random_state=42)
+
+# Output the results to check
+print("Training set:")
+print(X_train.head(), y_train.head())
+print("\nTest set:")
+print(X_test.head(), y_test.head())
